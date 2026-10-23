@@ -7,6 +7,7 @@ import { loadSettings, saveSettings, DEFAULT_SETTINGS, type Settings } from '../
 import { loadHistory, saveHistory, type HistoryEntry } from '../app/history';
 import { loadLast, refresh as doRefresh, type StoredForecast } from '../app/service';
 import { planAlerts, scheduleAlerts } from '../native/notifications';
+import { initNative } from '../native/platform';
 
 export type ForecastState =
   | { phase: 'idle' }
@@ -98,6 +99,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [settings.theme]);
 
   const active = spots.find((s) => s.id === activeId) ?? null;
+
+  // Android: spot deep links and back button.
+  const spotsRef = useRef(spots);
+  spotsRef.current = spots;
+  useEffect(() => {
+    if (!ready) return;
+    void initNative((query) => {
+      const linked = spotFromLink(`#/today?${query}`);
+      if (!linked) return;
+      const same = spotsRef.current.find((x) => Math.abs(x.lat - linked.lat) < 1e-4 && Math.abs(x.lon - linked.lon) < 1e-4);
+      const next = same ? spotsRef.current : [...spotsRef.current, linked];
+      const id = same ? same.id : linked.id;
+      setSpots(next);
+      setActiveId(id);
+      void saveSpots(kv, next);
+      void saveActiveId(kv, id);
+      console.info(`[glowcast] spot-link ${linked.name} ${linked.lat},${linked.lon}`);
+    }).catch((e) => console.warn('[glowcast] native init failed', e));
+  }, [ready, kv]);
+
+  // A stable, greppable line for the Android smoke test and for debugging.
+  useEffect(() => {
+    if (forecast.phase !== 'ready' || forecast.refreshing) return;
+    const f = forecast.stored.forecast;
+    const n = f.nextEvent;
+    console.info(
+      `[glowcast] forecast-ready spot="${f.observer.name}" events=${f.events.length} next=${n ? `${n.kind}:${n.verdictLabel}:${n.rating}` : 'none'} engine=${f.engineVersion}`,
+    );
+  }, [forecast]);
 
   const runRefresh = useCallback(
     async (spot: Spot, force: boolean) => {

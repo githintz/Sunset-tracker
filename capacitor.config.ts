@@ -5,8 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Glowcast',
   webDir: 'dist',
   android: {
-    // WebView console errors are surfaced in logcat so the CI smoke test can fail on them.
-    loggingBehavior: 'debug',
+    // WebView console output goes to logcat in release builds too, so the CI smoke test can fail on errors.
+    loggingBehavior: 'production',
   },
   plugins: {
     LocalNotifications: {

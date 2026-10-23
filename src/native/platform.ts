@@ -66,3 +66,18 @@ export function mapsBaseUrl(): string {
   if (__BUILD_TARGET__ === 'android' || isNative()) return 'https://githintz.github.io/Sunset-tracker/maps/';
   return `${import.meta.env.BASE_URL}maps/`;
 }
+
+/** Native shell hooks: spot deep links (glowcast://spot?...) and the hardware back button. */
+export async function initNative(onLink: (query: string) => void): Promise<void> {
+  if (!isNative()) return;
+  const { App } = await import('@capacitor/app');
+  const handle = (url: string | undefined) => {
+    if (url && url.includes('?')) onLink(url.slice(url.indexOf('?') + 1));
+  };
+  handle((await App.getLaunchUrl())?.url);
+  await App.addListener('appUrlOpen', (e) => handle(e.url));
+  await App.addListener('backButton', ({ canGoBack }) => {
+    if (canGoBack && !/#\/(today)?$/.test(window.location.hash) && window.location.hash !== '') window.history.back();
+    else void App.exitApp();
+  });
+}
