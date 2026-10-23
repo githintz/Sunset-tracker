@@ -76,13 +76,18 @@ export function columnAt(p: PointSeries, times: number[], t: number, modelHasLev
       return { hPa: l.hPa, cover: s(l.cover), zKm: h == null ? null : h / 1000 };
     });
   const vis = s(p.visibilityM);
+  const groundKm = (p.elevationM ?? 0) / 1000;
+  const low = s(p.low);
+  const mid = s(p.mid);
+  const high = s(p.high);
+  rescaleToBands(levels, groundKm, { low, mid, high });
   return {
     distanceKm: p.distanceKm,
-    groundKm: (p.elevationM ?? 0) / 1000,
+    groundKm,
     total: s(p.cloudCover),
-    low: s(p.low),
-    mid: s(p.mid),
-    high: s(p.high),
+    low,
+    mid,
+    high,
     precip: s(p.precip),
     precipProb: s(p.precipProb),
     rh: s(p.rh),
@@ -91,6 +96,24 @@ export function columnAt(p: PointSeries, times: number[], t: number, modelHasLev
     levelsComplete: modelHasLevels && levels.length > 0 && levels.every((l) => l.cover != null && l.zKm != null),
     modelHasLevels,
   };
+}
+
+/**
+ * Pressure-level cover is the cloud fraction at one height; a deck spread over several levels shows less at
+ * each level than the model's band total (e.g. 100 % mid cloud but 30–60 % at every mid level). A near-
+ * horizontal light path sees the band's full cover, so each band's level profile is scaled up until its peak
+ * matches the band total (never scaled down). An unknown band total counts as 100 % (worst case).
+ */
+export function rescaleToBands(levels: LevelSample[], groundKm: number, bands: Record<Band, Num>): void {
+  const bandOf = (z: number): Band => bandOfHeight({ groundKm }, z);
+  for (const b of ['low', 'mid', 'high'] as const) {
+    const inBand = levels.filter((l) => l.cover != null && l.zKm != null && bandOf(l.zKm) === b);
+    const peak = Math.max(0, ...inBand.map((l) => l.cover!));
+    if (peak < 1) continue;
+    const target = bands[b] ?? 100;
+    const k = Math.max(1, target / peak);
+    if (k > 1) for (const l of inBand) l.cover = Math.min(100, l.cover! * k);
+  }
 }
 
 export function bandOfHeight(col: Pick<Column, 'groundKm'>, zAbsKm: number): Band {

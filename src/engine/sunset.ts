@@ -200,44 +200,91 @@ export interface MomentContext {
 
 const CALC_DISTANCES = [...SAMPLE_POINTS.canvas, ...SAMPLE_POINTS.corridor];
 
-/** Is the light path from a cloud at (d, h) toward the sun at depression δ clear of blocking cloud? */
-function pathClear(cols: Map<number, Column | null>, dKm: number, hKm: number, depDeg: number): boolean {
-  for (const D of CALC_DISTANCES) {
-    if (D <= dKm) continue;
-    const s = D - dKm;
-    const z = lightPathAltitudeKm(hKm, depDeg, s);
-    if (z < 0) return false;
-    if (blockingAt(cols.get(D) ?? null, z).blocking >= LIT.blockThreshold) return false;
+/** Stretch of path (km) each calculation point stands for: halfway to its neighbours. */
+const SEGMENTS: Array<{ d: number; from: number; to: number }> = CALC_DISTANCES.map((d, i, a) => {
+  const prev = a[i - 1];
+  const next = a[i + 1];
+  return { d, from: prev == null ? d : (prev + d) / 2, to: next == null ? d + (d - a[i - 1]!) / 2 : (d + next) / 2 };
+});
+
+/** Fraction of light that survives the path from a cloud at (d, h) toward the sun at depression δ. */
+export function pathTransmission(cols: Map<number, Column | null>, dKm: number, hKm: number, depDeg: number): number {
+  let t = 1;
+  for (const seg of SEGMENTS) {
+    if (seg.to <= dKm) continue;
+    const len = seg.to - Math.max(seg.from, dKm);
+    if (len <= 0) continue;
+    const z = lightPathAltitudeKm(hKm, depDeg, Math.max(0, seg.d - dKm));
+    if (z < 0) return 0;
+    const b = blockingAt(cols.get(seg.d) ?? null, z).blocking;
+    t *= Math.pow(Math.max(0, 1 - b), len / LIT.cloudScaleKm);
   }
-  return true;
+  return t;
 }
 
-export function isLit(cols: Map<number, Column | null>, dKm: number, hKm: number): boolean {
+
+/**
+ * How well a cloud surface at (d, h) gets lit during the window: the best transmission (0..1) over the
+ * steps. Undersides catch light while the sun is 0…δmax below the horizon; the top of cloud below the
+ * viewpoint (undercast) catches it from a sun up to LIT.topSunDeg above the horizon down to δmax.
+ */
+export function litFraction(cols: Map<number, Column | null>, dKm: number, hKm: number, surface: 'base' | 'top' = 'base'): number {
   const maxDep = shadowAngleDeg(Math.max(0, hKm));
-  for (let dep = 0; dep <= maxDep + 1e-9; dep += LIT.stepDeg) {
-    if (pathClear(cols, dKm, hKm, dep)) return true;
+  const start = surface === 'top' ? -LIT.topSunDeg : 0;
+  let best = 0;
+  for (let dep = start; dep <= maxDep + 1e-9; dep += LIT.stepDeg) {
+    best = Math.max(best, pathTransmission(cols, dKm, hKm, dep));
+    if (best >= 0.999) break;
   }
-  return false;
+  return best;
+}
+
+/** A surface counts as lit when at least LIT.minTransmission of the light reaches it (chart colouring). */
+export function isLit(cols: Map<number, Column | null>, dKm: number, hKm: number, surface: 'base' | 'top' = 'base'): boolean {
+  return litFraction(cols, dKm, hKm, surface) >= LIT.minTransmission;
 }
 
 interface Target {
   zKm: number;
   weight: number;
+  surface: 'base' | 'top';
 }
 
-function litTargets(col: Column): Target[] | null {
+/**
+ * Cloud surfaces that can catch the light. Wherever cover steps up with height there is a cloud underside
+ * (placed halfway down to the level below), weighted by the newly appearing cover; wherever it steps down
+ * there is a cloud top. Undersides above the viewpoint and tops below it (undercast) are targets.
+ */
+export function cloudSurfaces(col: Column, observerElevKm: number): Target[] {
+  const lv = col.levels.map((l) => ({ z: l.zKm!, c: l.cover! / 100 })).sort((a, b) => a.z - b.z);
+  const out: Target[] = [];
+  const step = LIT.layerStep;
+  lv.forEach((l, i) => {
+    if (l.c < LIT.minTargetCover) return;
+    const below = lv[i - 1];
+    const above = lv[i + 1];
+    const rise = l.c - (below?.c ?? 0);
+    const fall = l.c - (above?.c ?? 0);
+    const baseZ = below ? (below.z + l.z) / 2 : Math.max(0.05, l.z - 0.3);
+    const topZ = above ? (l.z + above.z) / 2 : l.z + 0.3;
+    if (rise >= step && baseZ >= observerElevKm) out.push({ zKm: Math.max(0.05, baseZ), weight: rise, surface: 'base' });
+    if (fall >= step && topZ < observerElevKm) out.push({ zKm: topZ, weight: fall, surface: 'top' });
+  });
+  return out;
+}
+
+function litTargets(col: Column, observerElevKm: number): Target[] | null {
+  // Unknown band totals make the band-consistent level profile unknown too: worst case (full, unlit).
+  if (bandsMissing(col)) return null;
   if (col.modelHasLevels) {
     if (!col.levelsComplete) return null;
-    return col.levels
-      .filter((l) => l.cover! / 100 >= LIT.minTargetCover && l.zKm! > 0)
-      .map((l) => ({ zKm: l.zKm!, weight: l.cover! / 100 }));
+    return cloudSurfaces(col, observerElevKm);
   }
-  if (bandsMissing(col)) return null;
   const g = col.groundKm;
   const t: Target[] = [];
-  if (col.low! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 1.5, weight: col.low! / 100 });
-  if (col.mid! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 5, weight: col.mid! / 100 });
-  if (col.high! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 9.5, weight: col.high! / 100 });
+  if (col.low! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 1.5, weight: col.low! / 100, surface: 'base' });
+  if (col.mid! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 5, weight: col.mid! / 100, surface: 'base' });
+  if (col.high! / 100 >= LIT.minTargetCover) t.push({ zKm: g + 9.5, weight: col.high! / 100, surface: 'base' });
   return t;
 }
 
@@ -297,16 +344,16 @@ export function scoreMoment(corridor: CorridorSeries, t: number, ctx: MomentCont
   SAMPLE_POINTS.canvas.forEach((d, i) => {
     const col = cols.get(d) ?? null;
     const w = CANVAS_WEIGHTS[i]!;
-    const targets = col ? litTargets(col) : null;
+    const targets = col ? litTargets(col, obsKm) : null;
     if (!targets) {
       // unknown cloud here: count it as a full, unlit target (worst case)
       litDen += w;
       return;
     }
     if (targets.length === 0) return;
-    const mass = overlap(...targets.map((x) => x.weight));
+    const mass = Math.min(1, targets.reduce((a, x) => a + x.weight, 0));
     const tw = targets.reduce((a, x) => a + x.weight, 0);
-    const litW = targets.reduce((a, x) => a + (isLit(cols, d, x.zKm) ? x.weight : 0), 0);
+    const litW = targets.reduce((a, x) => a + (x.weight * litFraction(cols, d, x.zKm, x.surface)), 0);
     litNum += w * mass * (litW / tw);
     litDen += w * mass;
   });

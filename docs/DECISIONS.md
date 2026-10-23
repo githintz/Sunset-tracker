@@ -42,9 +42,22 @@ Every assumption made while building Glowcast, newest last. "Tunable" means the 
   geopotential heights. Band fallback (low < 3 km, mid 3–8 km, high ≥ 8 km above ground) takes the
   larger of two bands within 1.6 km of a band boundary, because band data cannot say where in the band
   the cloud sits — the pessimistic choice keeps "missing data never raises a score".
-- Lit test: each canvas cloud target (pressure level ≥ 10 % cover, or the band's representative height
-  1.5/5/9.5 km in band-only mode) is lit if, at any 0.25° depression step up to δmax, no sampled point on
-  its path toward the sun has cover × opacity ≥ 0.6. The path beyond 350 km is not sampled.
+- Lit test (engine 1.1.0): the targets are cloud **surfaces**. An underside sits wherever cover steps up by
+  ≥ 10 points between levels; a top (for cloud below the viewpoint) sits wherever it steps down. Each is
+  weighted by the change in cover, and in band-only mode the band's representative height is used. For
+  each surface, the light path toward the sun is followed at 0.25° depression steps up to δmax (tops also
+  get a sun up to 1° above the horizon). Transmission is Π(1 − cover × opacity)^(L/30 km) over the
+  stretch L each sampled point represents. The surface's lit fraction is its best transmission in the
+  window, and lit share is the weighted mean. The path beyond 350 km is not sampled.
+- Band-consistent levels (engine 1.1.0): pressure-level cover is the fraction at one height, so a deck
+  spread over several levels shows less at each level than the model's band total. Each band's level
+  profile is scaled up (never down) until its peak matches the band total. An unknown band total makes
+  that point unknown for the lit test (worst case).
+- Why 1.1.0: on 23 Oct 2026 SunsetVue said "Skip — 2 % sky lit" for Baden, but engine 1.0.0 said "Go 4.2".
+  The trace showed a 92–100 % mid deck out to 50 km whose individual levels read 30–60 %. The old
+  one-point "≥ 0.6 blocks" rule then let light through gaps that don't exist. With 1.1.0 the same data
+  gives a lit share of ~0.13 and a primary-model score of ~1.4. This is calibrated on one known case:
+  treat the constants as tunable and compare more cases in History.
 - Air modifier = 1 + AOD term (−0.05…+0.04) + visibility term (−0.05…+0.03) + humidity term
   (−0.05…+0.02), clamped 0.85–1.10. AOD 0.1–0.3 is "moderate" (bonus).
 - Rain = 1 − 0.6 × max(probability ramp 40→90 %, amount ramp 0→2 mm/h) over the canvas; floor 0.4.

@@ -3,7 +3,7 @@
  * Changing any value that alters a score must bump ENGINE_VERSION (semver minor for tuning, major for model changes).
  */
 
-export const ENGINE_VERSION = '1.0.0';
+export const ENGINE_VERSION = '1.1.0';
 
 export const EARTH_RADIUS_KM = 6371;
 
@@ -47,10 +47,19 @@ export const LIT = {
   saturation: 0.5,
   /** Solar depression step for the after-crossing window (degrees). */
   stepDeg: 0.25,
-  /** A point on the light path blocks if cover × opacity at the path altitude reaches this. */
-  blockThreshold: 0.6,
+  /**
+   * Light reaching a cloud must survive the whole path: transmission = Π (1 − cover × opacity)^(L / cloudScaleKm)
+   * over the stretch L each sampled point represents. A surface's lit fraction is its best transmission in the
+   * window; minTransmission only decides the lit/shadow colouring in the chart.
+   */
+  cloudScaleKm: 30,
+  /** Undercast tops catch grazing light from a sun up to this many degrees above the horizon. */
+  topSunDeg: 1,
+  minTransmission: 0.5,
   /** Canvas cloud layers thinner than this are ignored as targets. */
   minTargetCover: 0.1,
+  /** A rise (fall) in cover of at least this between levels marks a cloud underside (top). */
+  layerStep: 0.1,
 } as const;
 
 /** Canvas factor shape. */

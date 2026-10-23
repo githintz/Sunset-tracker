@@ -7,7 +7,11 @@ const spec = { latMin: 45, latMax: 47, lonMin: 6, lonMax: 10, step: 0.5 };
 const H = 3600000;
 const T0 = Date.parse('2026-06-21T00:00:00Z');
 
-function grid(f: (lat: number, lon: number, t: number) => Partial<Record<'total' | 'low' | 'mid' | 'high' | 'precipProb', Num>>): GridData {
+function grid(
+  f: (lat: number, lon: number, t: number) => Partial<Record<'total' | 'low' | 'mid' | 'high' | 'precipProb', Num>>,
+  sp = spec,
+): GridData {
+  const spec = sp;
   const times = Array.from({ length: 48 }, (_, i) => T0 + i * H);
   const cells = cellCoords(spec);
   const values = { total: [], low: [], mid: [], high: [], precipProb: [] } as GridData['values'];
@@ -37,13 +41,14 @@ describe('map grid', () => {
   });
 
   it('underlight: broken mid cloud scores well, overcast scores 0, leaving the grid is never optimistic', () => {
-    const nice = grid(() => ({ total: 50, mid: 50, high: 20 }));
+    const wide = { latMin: 42, latMax: 51, lonMin: 0, lonMax: 14, step: 0.5 };
+    const nice = grid(() => ({ total: 50, mid: 50, high: 20 }), wide);
     const t = Date.parse('2026-06-21T19:30:00Z');
     expect(cellUnderlight(nice, 46, 8, t, 300)).toBeGreaterThan(2);
-    const oc = grid(() => ({ total: 100, low: 100, mid: 100 }));
+    const oc = grid(() => ({ total: 100, low: 100, mid: 100 }), wide);
     expect(cellUnderlight(oc, 46, 8, t, 300)).toBe(0);
     // from the western edge, most of the corridor is outside the grid → worst case
-    expect(cellUnderlight(nice, 46, 6, t, 270)).toBeLessThan(cellUnderlight(nice, 46, 10, t, 270));
+    expect(cellUnderlight(nice, 46, 0.5, t, 270)).toBeLessThan(cellUnderlight(nice, 46, 13, t, 270));
   });
 
   it('dark sky needs night, no moon and no cloud', () => {
