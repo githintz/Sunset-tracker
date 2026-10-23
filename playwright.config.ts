@@ -18,6 +18,7 @@ export default defineConfig({
   projects: [
     { name: 'fixtures', testMatch: /.*\.fixtures\.spec\.ts/, use: { ...devices['Pixel 7'] } },
     { name: 'live', testMatch: /.*\.live\.spec\.ts/, use: { ...devices['Pixel 7'] }, timeout: 120_000 },
+    { name: 'shots', testMatch: /.*\.shots\.ts/, use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
     command: 'npm run preview',

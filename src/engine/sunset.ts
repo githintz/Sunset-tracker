@@ -9,7 +9,7 @@ import {
   CANVAS_WEIGHTS,
   EARTH_RADIUS_KM,
   LIT,
-  OVERCAST_TOTAL,
+  OVERCAST_OPAQUE,
   RAIN,
   REACH,
   SAMPLE_POINTS,
@@ -341,10 +341,11 @@ export function scoreMoment(corridor: CorridorSeries, t: number, ctx: MomentCont
   const meanProb = probSum / SAMPLE_POINTS.canvas.length;
   const rain = rainMultiplier(meanProb, maxMm);
 
-  // overcast everywhere (unknown counts as possibly overcast)
+  // opaque overcast everywhere (unknown counts as possibly overcast)
   const overcastAll = CALC_DISTANCES.every((d) => {
-    const tot = cols.get(d)?.total ?? null;
-    return tot == null || tot >= OVERCAST_TOTAL;
+    const col = cols.get(d) ?? null;
+    if (!col || col.low == null || col.mid == null) return true;
+    return overlap(col.low / 100, col.mid / 100) * 100 >= OVERCAST_OPAQUE;
   });
 
   const raw = overcastAll ? 0 : 5 * canvas * reach * lit * airRes.value * rain;

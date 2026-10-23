@@ -74,6 +74,16 @@ describe('event rating', () => {
     expect(r.confidence).toBe('medium');
   });
 
+  it('primary model missing → the second model stands in and says so', () => {
+    const B = corridor((d) => (d <= 20 ? nice : clear), 'ecmwf_ifs025');
+    const r = rateEvent({ observer: ZURICH, event: SUNSET, corridorA: null, corridorB: B, air: airS(), obs: obsSeries() });
+    expect(r.primaryIsB).toBe(true);
+    expect(r.singleModel).toBe(true);
+    expect(r.event?.model).toBe('ecmwf_ifs025');
+    expect(r.reasons.some((x) => x.code === 'primary-missing')).toBe(true);
+    expect(r.rating).not.toBeNull();
+  });
+
   it('no data covering the event → null rating and an honest reason', () => {
     const A = corridor((d) => (d <= 20 ? nice : clear), 'best_match', SUNSET.centre + 3 * 86400000);
     const r = rateEvent({ observer: ZURICH, event: SUNSET, corridorA: A, corridorB: null, air: null, obs: null });

@@ -6,17 +6,22 @@ import type { Observer, Reason } from './types';
 const pct = (x: number) => `${Math.round(x * 100)} %`;
 const km = (x: number) => `${Math.round(x)} km`;
 
+/** Mean of a band over the known canvas points (null if none known). */
+function canvasMean(m: MomentScore, k: 'low' | 'mid' | 'high'): number | null {
+  const xs = m.points.filter((p) => p.role === 'canvas' && p[k] != null).map((p) => p[k]!);
+  return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null;
+}
+
 function canvasStory(m: MomentScore): { code: string; text: string } {
-  const over = m.points.find((p) => p.distanceKm === 0);
-  const L = over?.low ?? null;
-  const M = over?.mid ?? null;
-  const H = over?.high ?? null;
+  const L = canvasMean(m, 'low');
+  const M = canvasMean(m, 'mid');
+  const H = canvasMean(m, 'high');
   if (m.undercast) {
     if (M != null && M >= 85) return { code: 'undercast-mid-lid', text: `You are above the low cloud but a solid mid-level deck (${Math.round(M)} %) sits overhead and will hold back the colour` };
     return { code: 'undercast', text: `You stand above the low cloud — a sea of clouds below the viewpoint can catch the light` };
   }
   if (L != null && L >= 85) return { code: 'low-lid', text: `A thick low deck overhead (${Math.round(L)} %) leaves little for the light to paint` };
-  if (L != null && M != null && H != null && L < 10 && M < 10 && H < 10) return { code: 'clear', text: 'Almost no cloud overhead to catch the colour — expect a clean but pale glow' };
+  if (L != null && M != null && H != null && L < 10 && M < 10 && H < 10 && m.canvas < 0.3) return { code: 'clear', text: 'Almost no cloud overhead to catch the colour — expect a clean but pale glow' };
   if (M != null && H != null && Math.max(M, H) >= 90) return { code: 'upper-lid', text: 'A closed mid/high deck overhead — colour will mostly stay on its edges and gaps' };
   if (L != null && L > 0 && L <= 30 && (M ?? 0) < 15 && (H ?? 0) < 15) return { code: 'low-sparse', text: 'Only scattered low cloud overhead — a pale glow rather than fire' };
   if (m.canvas >= 0.7) return { code: 'canvas-good', text: 'Broken mid and high cloud overhead — a good canvas for colour' };
@@ -59,10 +64,16 @@ export function buildSunsetReasons(r: EventRating, observer: Observer): Reason[]
     },
   ];
   if (m.overcastAll) {
-    out.push({ kind: 'main', code: 'overcast-all', text: 'Solid cloud at every sample point — the sun has no way in under it' });
+    out.push({ kind: 'main', code: 'overcast-all', text: 'A solid low/mid-level deck at every sample point — the sun has no way in under it' });
   } else if ((r.raw ?? 0) >= 3.5) {
     const c = canvasStory(m);
-    out.push({ kind: 'main', code: `good-${c.code}`, text: m.reach >= 0.99 ? `${c.text}, with a clear path toward the sun` : c.text });
+    const text =
+      c.code === 'upper-lid'
+        ? 'A thick mid/high deck overhead with an open path toward the sun beneath it — its underside can light up'
+        : m.reach >= 0.99
+          ? `${c.text}, with a clear path toward the sun`
+          : c.text;
+    out.push({ kind: 'main', code: `good-${c.code}`, text });
   } else {
     losses.sort((a, b) => b.loss - a.loss);
     const top = losses[0]!;
@@ -81,6 +92,7 @@ export function buildSunsetReasons(r: EventRating, observer: Observer): Reason[]
 
   // ---- risks
   if (r.modelsDisagree && r.modelB) out.push({ kind: 'risk', code: 'disagree', text: `The two models disagree (${m.score.toFixed(1)} vs ${r.modelB.score.toFixed(1)}) — check again closer to the time` });
+  if (r.primaryIsB) out.push({ kind: 'risk', code: 'primary-missing', text: `The primary model has no data for this ${word}; rated from the second model alone` });
   if (r.singleModel) out.push({ kind: 'risk', code: 'single-model', text: 'Only one forecast available — no second model to cross-check' });
   if (m.rain < 0.9 && !out.some((x) => x.code === 'rain')) out.push({ kind: 'risk', code: 'rain', text: 'Some rain risk over the viewpoint' });
   if (m.air < 0.95 && m.missingAir.length === 0) out.push({ kind: 'risk', code: 'haze', text: 'Hazy or very humid air will mute the colours' });

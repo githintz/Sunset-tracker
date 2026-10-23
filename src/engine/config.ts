@@ -96,8 +96,11 @@ export const RAIN = {
   maxPenalty: 0.6,
 } as const;
 
-/** "Overcast" for the all-points-overcast zero rule (total cloud %). */
-export const OVERCAST_TOTAL = 97;
+/**
+ * "Overcast" for the all-points-overcast zero rule: opaque low+mid cloud (random overlap) at or above this %.
+ * High cloud alone (cirrostratus) does not count — it can still light up.
+ */
+export const OVERCAST_OPAQUE = 97;
 
 /** Scenarios averaged into the sunset rating. */
 export const SCENARIOS = {

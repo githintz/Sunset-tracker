@@ -37,6 +37,8 @@ export interface EventRating {
   stars: number | null;
   modelsDisagree: boolean;
   singleModel: boolean;
+  /** The primary model had no data; the second model was used alone. */
+  primaryIsB: boolean;
   golden: GoldenRating;
   sky: SkyRating;
   combined: number | null;
@@ -71,13 +73,19 @@ export function rateEvent(inp: EventInputs): EventRating {
   const offset = SCENARIOS.bestLightOffsetMin * 60000 * (event.kind === 'sunset' ? 1 : -1);
   const bestT = event.centre + offset;
 
-  const ev = covers(inp.corridorA, event.centre) ? scoreMoment(inp.corridorA, event.centre, ctx) : null;
-  const best = covers(inp.corridorA, bestT) ? scoreMoment(inp.corridorA, bestT, ctx) : null;
-  const mb = covers(inp.corridorB, event.centre) ? scoreMoment(inp.corridorB, event.centre, ctx) : null;
+  // If the primary model has no data for this event, the second model stands in (and is reported as such).
+  const aOk = covers(inp.corridorA, event.centre);
+  const primary = aOk ? inp.corridorA : covers(inp.corridorB, event.centre) ? inp.corridorB : null;
+  const secondary = aOk ? inp.corridorB : null;
+  const primaryIsB = !aOk && primary != null;
+
+  const ev = primary && covers(primary, event.centre) ? scoreMoment(primary, event.centre, ctx) : null;
+  const best = primary && covers(primary, bestT) ? scoreMoment(primary, bestT, ctx) : null;
+  const mb = covers(secondary, event.centre) ? scoreMoment(secondary, event.centre, ctx) : null;
 
   const shoulders = [-SCENARIOS.shoulderHours, SCENARIOS.shoulderHours].map((h) => {
     const t = event.centre + h * 3600000;
-    return { t, score: covers(inp.corridorA, t) ? scoreMoment(inp.corridorA, t, ctx).score : null };
+    return { t, score: primary && covers(primary, t) ? scoreMoment(primary, t, ctx).score : null };
   });
 
   const scen = [ev, best, mb].filter((x): x is MomentScore => x != null);
@@ -91,7 +99,7 @@ export function rateEvent(inp: EventInputs): EventRating {
     observerElevKm: obsKm,
     kind: event.kind,
     eventMs: event.official,
-    corridor: inp.corridorA,
+    corridor: primary,
     observer: inp.obs,
     air: ev?.air ?? 1,
   });
@@ -124,6 +132,7 @@ export function rateEvent(inp: EventInputs): EventRating {
     singleModel,
     golden,
     sky,
+    primaryIsB,
     combined,
     verdict,
     verdictLabel: verdictLabel(verdict),

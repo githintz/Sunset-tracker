@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { idbKV, memoryKV, type KV } from '../data/cache';
 import type { Spot } from '../data/pipeline';
-import { loadSpots, saveSpots, loadActiveId, saveActiveId } from '../app/spots';
+import { loadSpots, saveSpots, loadActiveId, saveActiveId, spotFromLink } from '../app/spots';
 import { loadSettings, saveSettings, DEFAULT_SETTINGS, type Settings } from '../app/settings';
 import { loadHistory, saveHistory, type HistoryEntry } from '../app/history';
 import { loadLast, refresh as doRefresh, type StoredForecast } from '../app/service';
@@ -67,9 +67,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [s, a, st, h] = await Promise.all([loadSpots(kv), loadActiveId(kv), loadSettings(kv), loadHistory(kv)]);
+      const [loaded, a, st, h] = await Promise.all([loadSpots(kv), loadActiveId(kv), loadSettings(kv), loadHistory(kv)]);
+      let s = loaded;
+      let act = a && s.some((x) => x.id === a) ? a : (s[0]?.id ?? null);
+      // Shared spot link: #/today?spot=lat,lon&name=…&alt=…
+      const linked = spotFromLink(window.location.hash);
+      if (linked) {
+        const same = s.find((x) => Math.abs(x.lat - linked.lat) < 1e-4 && Math.abs(x.lon - linked.lon) < 1e-4 && x.elevationOverrideM === linked.elevationOverrideM);
+        if (same) act = same.id;
+        else {
+          s = [...s, linked];
+          act = linked.id;
+          await saveSpots(kv, s);
+        }
+        await saveActiveId(kv, act);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search + window.location.hash.split('?')[0]);
+      }
       setSpots(s);
-      setActiveId(a && s.some((x) => x.id === a) ? a : (s[0]?.id ?? null));
+      setActiveId(act);
       setSettingsState(st);
       setHistoryState(h);
       setReady(true);
