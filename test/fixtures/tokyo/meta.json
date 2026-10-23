@@ -1,0 +1,58 @@
+{
+  "spot": {
+    "id": "tokyo",
+    "name": "Tokyo",
+    "lat": 35.6762,
+    "lon": 139.6503,
+    "elevationOverrideM": null,
+    "timezone": null
+  },
+  "now": 1792756800000,
+  "recordedAt": "2026-10-23T12:36:58.066Z",
+  "errors": [],
+  "modelB": "ecmwf_ifs",
+  "requests": [
+    {
+      "kind": "elevation",
+      "url": "https://api.open-meteo.com/v1/elevation?latitude=35.6762%2C35.7433%2C35.721%2C35.7099%2C35.6987%2C35.6919%2C35.6874%2C35.6852%2C35.683%2C35.6818%2C35.6807%2C35.6785%2C35.6773%2C35.6762%2C35.6751%2C35.6739%2C35.6728%2C35.6717%2C35.6706%2C35.6694%2C35.6672%2C35.6649%2C35.6627%2C35.6582%2C35.6536%2C35.6491%2C35.6423%2C35.631%2C35.6196%2C35.6082%2C35.5854%2C35.5624%2C35.5394%2C35.5163%2C35.493%2C35.4463%2C35.3992%2C35.3278%2C35.2677%2C35.207%2C35.1458%2C35.0839%2C35.0215%2C34.9585%2C34.895%2C34.8309%2C35.7433%2C35.721%2C35.7099%2C35.6987%2C35.6919%2C35.6874%2C35.6852%2C35.683%2C35.6818%2C35.6807%2C35.6785%2C35.6773%2C35.6762%2C35.6751%2C35.6739%2C35.6728%2C35.6717%2C35.6706%2C35.6694%2C35.6672%2C35.6649%2C35.6627%2C35.6582%2C35.6536%2C35.6491%2C35.6423%2C35.631%2C35.6196%2C35.6082%2C35.5854%2C35.5624%2C35.5394%2C35.5163%2C35.493%2C35.4463%2C35.3992%2C35.3278%2C35.2677%2C35.207%2C35.1458%2C35.0839%2C35.0215%2C34.9585%2C34.895%2C34.8309&longitude=139.6503%2C139.9721%2C139.8648%2C139.8111%2C139.7575%2C139.7253%2C139.7039%2C139.6932%2C139.6825%2C139.6771%2C139.6717%2C139.661%2C139.6557%2C139.6503%2C139.6449%2C139.6396%2C139.6342%2C139.6289%2C139.6235%2C139.6181%2C139.6074%2C139.5967%2C139.586%2C139.5646%2C139.5431%2C139.5217%2C139.4896%2C139.4361%2C139.3825%2C139.329%2C139.2221%2C139.1151%2C139.0083%2C138.9015%2C138.7948%2C138.5815%2C138.3685%2C138.0495%2C137.784%2C137.519%2C137.2543%2C136.99%2C136.7262%2C136.4627%2C136.1997%2C135.9371%2C139.3285%2C139.4358%2C139.4895%2C139.5431%2C139.5753%2C139.5967%2C139.6074%2C139.6181%2C139.6235%2C139.6289%2C139.6396%2C139.6449%2C139.6503%2C139.6557%2C139.661%2C139.6664%2C139.6717%2C139.6771%2C139.6825%2C139.6932%2C139.7039%2C139.7146%2C139.736%2C139.7575%2C139.7789%2C139.811%2C139.8645%2C139.9181%2C139.9716%2C140.0785%2C140.1855%2C140.2923%2C140.3991%2C140.5058%2C140.7191%2C140.9321%2C141.2511%2C141.5166%2C141.7816%2C142.0463%2C142.3106%2C142.5744%2C142.8379%2C143.1009%2C143.3635",
+      "file": "elevation.json",
+      "calls": 1
+    },
+    {
+      "kind": "corridorA-sunset",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=35.6874%2C35.6818%2C35.6762%2C35.6706%2C35.6649%2C35.6536%2C35.631%2C35.6082%2C35.5624%2C35.4463%2C35.3278%2C35.207%2C34.9585%2C34.8309&longitude=139.7039%2C139.6771%2C139.6503%2C139.6235%2C139.5967%2C139.5431%2C139.4361%2C139.329%2C139.1151%2C138.5815%2C138.0495%2C137.519%2C136.4627%2C135.9371&elevation=59%2C38%2C37%2C49%2C56%2C40%2C77%2C174%2C383%2C1387%2C1813%2C597%2C161%2C409&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_950hPa%2Cgeopotential_height_950hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_900hPa%2Cgeopotential_height_900hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_800hPa%2Cgeopotential_height_800hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=best_match&timeformat=unixtime&forecast_days=3",
+      "file": "corridorA-sunset.json",
+      "calls": 47.6
+    },
+    {
+      "kind": "observer",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=35.6762&longitude=139.6503&elevation=37&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cshowers%2Ccape%2Clifted_index%2Csunshine_duration%2Cdirect_radiation%2Cvisibility%2Cdew_point_2m%2Ctemperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m%2Cwind_gusts_10m%2Csnow_depth%2Cweather_code&models=best_match&timeformat=unixtime&timezone=auto&forecast_days=3",
+      "file": "observer.json",
+      "calls": 1.8
+    },
+    {
+      "kind": "corridorB-sunset",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=35.6874%2C35.6762%2C35.6649%2C35.631%2C35.5624%2C35.4463%2C35.3278%2C35.207%2C34.9585%2C34.8309&longitude=139.7039%2C139.6503%2C139.5967%2C139.4361%2C139.1151%2C138.5815%2C138.0495%2C137.519%2C136.4627%2C135.9371&elevation=59%2C37%2C56%2C77%2C383%2C1387%2C1813%2C597%2C161%2C409&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=ecmwf_ifs&timeformat=unixtime&forecast_days=3",
+      "file": "corridorB-sunset.json",
+      "calls": 28
+    },
+    {
+      "kind": "corridorA-sunrise",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=35.6874%2C35.6818%2C35.6762%2C35.6706%2C35.6649%2C35.6536%2C35.631%2C35.6082%2C35.5624%2C35.4463%2C35.3278%2C35.207%2C34.9585%2C34.8309&longitude=139.5967%2C139.6235%2C139.6503%2C139.6771%2C139.7039%2C139.7575%2C139.8645%2C139.9716%2C140.1855%2C140.7191%2C141.2511%2C141.7816%2C142.8379%2C143.3635&elevation=49%2C48%2C37%2C41%2C26%2C8%2C0%2C0%2C46%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_950hPa%2Cgeopotential_height_950hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_900hPa%2Cgeopotential_height_900hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_800hPa%2Cgeopotential_height_800hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=best_match&timeformat=unixtime&forecast_days=3",
+      "file": "corridorA-sunrise.json",
+      "calls": 47.6
+    },
+    {
+      "kind": "corridorB-sunrise",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=35.6874%2C35.6762%2C35.6649%2C35.631%2C35.5624%2C35.4463%2C35.3278%2C35.207%2C34.9585%2C34.8309&longitude=139.5967%2C139.6503%2C139.7039%2C139.8645%2C140.1855%2C140.7191%2C141.2511%2C141.7816%2C142.8379%2C143.3635&elevation=49%2C37%2C26%2C0%2C46%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=ecmwf_ifs&timeformat=unixtime&forecast_days=3",
+      "file": "corridorB-sunrise.json",
+      "calls": 28
+    },
+    {
+      "kind": "air",
+      "url": "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=35.6762&longitude=139.6503&hourly=aerosol_optical_depth%2Cdust&timeformat=unixtime&forecast_days=3",
+      "file": "air.json",
+      "calls": 1
+    }
+  ]
+}

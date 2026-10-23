@@ -1,0 +1,58 @@
+{
+  "spot": {
+    "id": "mid-atlantic",
+    "name": "Mid-Atlantic",
+    "lat": 30,
+    "lon": -40,
+    "elevationOverrideM": null,
+    "timezone": null
+  },
+  "now": 1792756800000,
+  "recordedAt": "2026-10-23T12:38:13.107Z",
+  "errors": [],
+  "modelB": "ecmwf_ifs",
+  "requests": [
+    {
+      "kind": "elevation",
+      "url": "https://api.open-meteo.com/v1/elevation?latitude=30%2C30.0626%2C30.0418%2C30.0314%2C30.021%2C30.0147%2C30.0105%2C30.0084%2C30.0063%2C30.0052%2C30.0042%2C30.0021%2C30.001%2C30%2C29.999%2C29.9979%2C29.9968%2C29.9958%2C29.9947%2C29.9937%2C29.9916%2C29.9895%2C29.9874%2C29.9832%2C29.979%2C29.9748%2C29.9684%2C29.9579%2C29.9473%2C29.9367%2C29.9154%2C29.8941%2C29.8727%2C29.8512%2C29.8296%2C29.7862%2C29.7425%2C29.6765%2C29.6209%2C29.5648%2C29.5083%2C29.4513%2C29.3939%2C29.3359%2C29.2776%2C29.2187%2C30.0626%2C30.0418%2C30.0314%2C30.021%2C30.0147%2C30.0105%2C30.0084%2C30.0063%2C30.0052%2C30.0042%2C30.0021%2C30.001%2C30%2C29.999%2C29.9979%2C29.9968%2C29.9958%2C29.9947%2C29.9937%2C29.9916%2C29.9895%2C29.9874%2C29.9832%2C29.979%2C29.9748%2C29.9684%2C29.9579%2C29.9473%2C29.9367%2C29.9154%2C29.8941%2C29.8727%2C29.8512%2C29.8296%2C29.7862%2C29.7425%2C29.6765%2C29.6209%2C29.5648%2C29.5083%2C29.4513%2C29.3939%2C29.3359%2C29.2776%2C29.2187&longitude=-40%2C-39.6969%2C-39.798%2C-39.8485%2C-39.899%2C-39.9293%2C-39.9495%2C-39.9596%2C-39.9697%2C-39.9748%2C-39.9798%2C-39.9899%2C-39.995%2C-40%2C-40.005%2C-40.0101%2C-40.0151%2C-40.0202%2C-40.0252%2C-40.0303%2C-40.0404%2C-40.0505%2C-40.0606%2C-40.0808%2C-40.101%2C-40.1211%2C-40.1514%2C-40.2019%2C-40.2523%2C-40.3027%2C-40.4036%2C-40.5043%2C-40.6051%2C-40.7058%2C-40.8064%2C-41.0076%2C-41.2086%2C-41.5098%2C-41.7604%2C-42.0108%2C-42.2609%2C-42.5108%2C-42.7603%2C-43.0096%2C-43.2586%2C-43.5073%2C-40.3031%2C-40.202%2C-40.1515%2C-40.101%2C-40.0707%2C-40.0505%2C-40.0404%2C-40.0303%2C-40.0252%2C-40.0202%2C-40.0101%2C-40.005%2C-40%2C-39.995%2C-39.9899%2C-39.9849%2C-39.9798%2C-39.9748%2C-39.9697%2C-39.9596%2C-39.9495%2C-39.9394%2C-39.9192%2C-39.899%2C-39.8789%2C-39.8486%2C-39.7981%2C-39.7477%2C-39.6973%2C-39.5964%2C-39.4957%2C-39.3949%2C-39.2942%2C-39.1936%2C-38.9924%2C-38.7914%2C-38.4902%2C-38.2396%2C-37.9892%2C-37.7391%2C-37.4892%2C-37.2397%2C-36.9904%2C-36.7414%2C-36.4927",
+      "file": "elevation.json",
+      "calls": 1
+    },
+    {
+      "kind": "corridorA-sunset",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=30.0105%2C30.0052%2C30%2C29.9947%2C29.9895%2C29.979%2C29.9579%2C29.9367%2C29.8941%2C29.7862%2C29.6765%2C29.5648%2C29.3359%2C29.2187&longitude=-39.9495%2C-39.9748%2C-40%2C-40.0252%2C-40.0505%2C-40.101%2C-40.2019%2C-40.3027%2C-40.5043%2C-41.0076%2C-41.5098%2C-42.0108%2C-43.0096%2C-43.5073&elevation=0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_950hPa%2Cgeopotential_height_950hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_900hPa%2Cgeopotential_height_900hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_800hPa%2Cgeopotential_height_800hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=best_match&timeformat=unixtime&forecast_days=3",
+      "file": "corridorA-sunset.json",
+      "calls": 47.6
+    },
+    {
+      "kind": "observer",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=30&longitude=-40&elevation=0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cshowers%2Ccape%2Clifted_index%2Csunshine_duration%2Cdirect_radiation%2Cvisibility%2Cdew_point_2m%2Ctemperature_2m%2Crelative_humidity_2m%2Cwind_speed_10m%2Cwind_gusts_10m%2Csnow_depth%2Cweather_code&models=best_match&timeformat=unixtime&timezone=auto&forecast_days=3",
+      "file": "observer.json",
+      "calls": 1.8
+    },
+    {
+      "kind": "corridorB-sunset",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=30.0105%2C30%2C29.9895%2C29.9579%2C29.8941%2C29.7862%2C29.6765%2C29.5648%2C29.3359%2C29.2187&longitude=-39.9495%2C-40%2C-40.0505%2C-40.2019%2C-40.5043%2C-41.0076%2C-41.5098%2C-42.0108%2C-43.0096%2C-43.5073&elevation=0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=ecmwf_ifs&timeformat=unixtime&forecast_days=3",
+      "file": "corridorB-sunset.json",
+      "calls": 28
+    },
+    {
+      "kind": "corridorA-sunrise",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=30.0105%2C30.0052%2C30%2C29.9947%2C29.9895%2C29.979%2C29.9579%2C29.9367%2C29.8941%2C29.7862%2C29.6765%2C29.5648%2C29.3359%2C29.2187&longitude=-40.0505%2C-40.0252%2C-40%2C-39.9748%2C-39.9495%2C-39.899%2C-39.7981%2C-39.6973%2C-39.4957%2C-38.9924%2C-38.4902%2C-37.9892%2C-36.9904%2C-36.4927&elevation=0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_950hPa%2Cgeopotential_height_950hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_900hPa%2Cgeopotential_height_900hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_800hPa%2Cgeopotential_height_800hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=best_match&timeformat=unixtime&forecast_days=3",
+      "file": "corridorA-sunrise.json",
+      "calls": 47.6
+    },
+    {
+      "kind": "corridorB-sunrise",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=30.0105%2C30%2C29.9895%2C29.9579%2C29.8941%2C29.7862%2C29.6765%2C29.5648%2C29.3359%2C29.2187&longitude=-40.0505%2C-40%2C-39.9495%2C-39.7981%2C-39.4957%2C-38.9924%2C-38.4902%2C-37.9892%2C-36.9904%2C-36.4927&elevation=0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0%2C0&hourly=cloud_cover%2Ccloud_cover_low%2Ccloud_cover_mid%2Ccloud_cover_high%2Cprecipitation%2Cprecipitation_probability%2Crelative_humidity_2m%2Cvisibility%2Ccloud_cover_1000hPa%2Cgeopotential_height_1000hPa%2Ccloud_cover_925hPa%2Cgeopotential_height_925hPa%2Ccloud_cover_850hPa%2Cgeopotential_height_850hPa%2Ccloud_cover_700hPa%2Cgeopotential_height_700hPa%2Ccloud_cover_600hPa%2Cgeopotential_height_600hPa%2Ccloud_cover_500hPa%2Cgeopotential_height_500hPa%2Ccloud_cover_400hPa%2Cgeopotential_height_400hPa%2Ccloud_cover_300hPa%2Cgeopotential_height_300hPa%2Ccloud_cover_250hPa%2Cgeopotential_height_250hPa%2Ccloud_cover_200hPa%2Cgeopotential_height_200hPa&models=ecmwf_ifs&timeformat=unixtime&forecast_days=3",
+      "file": "corridorB-sunrise.json",
+      "calls": 28
+    },
+    {
+      "kind": "air",
+      "url": "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=30&longitude=-40&hourly=aerosol_optical_depth%2Cdust&timeformat=unixtime&forecast_days=3",
+      "file": "air.json",
+      "calls": 1
+    }
+  ]
+}
