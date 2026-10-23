@@ -61,9 +61,69 @@ Every assumption made while building Glowcast, newest last. "Tunable" means the 
 
 ## Data
 
-- Second model: ECMWF IFS HRES 9 km (`ecmwf_ifs`) is on the free API; if refused (HTTP 400) we fall back
-  to `ecmwf_ifs025`. ECMWF's pressure-level cloud cover is derived from relative humidity (Sundqvist) and
-  only levels 1000/925/850/700/600/500/400/300/250/200 hPa exist, so model B requests those ten.
+- Second model: `ecmwf_ifs025` (ECMWF IFS 0.25°). Checked on recorded responses: the 9 km HRES run
+  (`ecmwf_ifs`) returns every pressure-level variable as null on the free API, so it is only the fallback
+  (used if `ecmwf_ifs025` is refused with HTTP 400). ECMWF's pressure-level cloud cover is derived from
+  relative humidity (Sundqvist) and only levels 1000/925/850/700/600/500/400/300/250/200 hPa exist, so
+  model B requests those ten. Because of the RH derivation, ECMWF often shows more upper cloud than the
+  primary model; in the first 7-day live comparison the two agreed within 1 point on 39 of 74 events. The
+  "models disagree" badge and lower confidence surface this.
+- A model may not publish every requested level (e.g. `best_match` has no 950/900/800 hPa at Tromsø).
+  Levels that are null at every point and time are dropped at parse time (not "missing"); fewer than 5
+  published levels → band-only mode.
+- Corridors request `surface_pressure`; levels with a higher pressure (+5 hPa tolerance) are below the
+  model's ground and are ignored. Found via the live comparison, where extrapolated sub-surface fog at
+  1000 hPa made a 409 m spot look "above the low cloud".
+- One past day is requested with every forecast (no extra cost: ≤ 14 days per call) so today's earlier
+  sunrise/sunset is rated too.
+- If the primary model has no data for an event, the second model stands in and the reasons say so.
+- Overcast for the zero rule means opaque low+mid cloud (random overlap) ≥ 97 %; cirrostratus alone does
+  not count (ECMWF reports ~98 % total cloud under thin cirrus).
 - Model B is requested only at the 10 calculation points (chart-only points are drawn from model A).
 - Call cost: per location max(1, vars/10) × max(1, days/14). Elevation requests are assumed to cost one
   call each (Open-Meteo does not document it). See README for the per-refresh figure.
+
+## Cost per refresh (estimated, Open-Meteo's counting rules)
+
+| Request | Locations | Variables | Calls |
+|---|---|---|---|
+| Elevation profile (both bearings, 91 coords) | 91 | – | 1 (assumed) |
+| Primary model, sunset corridor | 14 | 35 | 49 |
+| Primary model, sunrise corridor | 14 | 35 | 49 |
+| ECMWF, sunset corridor | 10 | 29 | 29 |
+| ECMWF, sunrise corridor | 10 | 29 | 29 |
+| Viewpoint column | 1 | 18 | 1.8 |
+| Aerosols | 1 | 2 | 1 |
+| **Total** | | | **≈ 160** |
+
+This is above the brief's "≤ ~120" target. The extra comes from the second model (58 calls). The cheaper
+alternatives were dropping pressure levels from model B (it then scores from coarse bands, which the
+first fixture run showed is systematically pessimistic) or rating sunrise only on demand. We kept both
+models for both events, because the comparison is what makes the "models disagree" flag useful. With
+the 60-minute cache, the free tier allows ~60 full refreshes a day.
+
+Map run (default Alps box, 0.25°): 23 × 51 = 1,173 cells, 5 variables → 1,173 calls per run, 12 batched
+requests spaced 12 s apart (< 600 calls/min). 8 runs a day ≈ 9,400 calls, under the 10,000/day limit but
+close to it. Shrink the box or use 0.5° (≈ 300 calls/run) for more headroom.
+
+## Maps
+
+- Grid cells are scored with the same engine in band-only mode (no pressure levels, no aerosols,
+  observer at 0 m) by bilinear interpolation of the grid along each cell's own sun bearing. Corridor
+  points outside the grid are unknown → worst case, so cells near the sunward edge read low.
+- Frames: cloud layers and dark sky every 3 h; underlight per local day (Europe/Zurich) for sunset and
+  sunrise. Bytes 0–254, 255 = no data, base64 in one JSON per layer.
+- Code-only deploys keep the live grids by fetching them inside the serialized deploy job.
+
+## Android
+
+- Capacitor 8: minSdk 24, compile/targetSdk 36, AGP 8.13, Gradle 8.14.3, JDK 21.
+- Background fetch on Android needs a foreground service or WorkManager plugin to be reliable; we do
+  not ship one. Alerts are planned from the latest forecast each time the app refreshes (opening the app
+  or "Check now"), plus an optional daily reminder notification. If the app is not opened, alerts use the
+  last forecast, which may be up to a day old.
+- Signing: a persistent keystore in repository secrets; without them CI signs with a throwaway key and
+  warns (the APK installs, but later builds won't install over it).
+- WebView console output is forwarded to logcat in release builds (`loggingBehavior: 'production'`) so
+  the emulator smoke test can fail on console errors.
+- Deep links `glowcast://spot?spot=lat,lon&name=…&alt=…` open a spot (used by the smoke test).

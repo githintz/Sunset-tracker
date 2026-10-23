@@ -35,6 +35,14 @@ adb exec-out screencap -p > "$OUT/02-forecast.png"
 adb logcat -d -v threadtime > "$OUT/logcat.txt"
 grep -h '\[glowcast\]' "$OUT/logcat.txt" | tail -5
 
+# Small previews in the job log (artifacts are the full-size originals)
+for f in "$OUT"/*.png; do
+  if command -v convert >/dev/null; then
+    convert "$f" -resize 270x -quality 55 "${f%.png}.preview.jpg"
+    echo "::group::preview $(basename "$f")"; echo "PREVIEW-BEGIN $(basename "$f")"; base64 -w0 "${f%.png}.preview.jpg"; echo; echo "PREVIEW-END"; echo "::endgroup::"
+  fi
+done
+
 fail=0
 if [ "$ok" != "1" ]; then echo "::error::No '[glowcast] forecast-ready' line within 150 s"; fail=1; fi
 if grep -q 'FATAL EXCEPTION' "$OUT/logcat.txt"; then echo "::error::FATAL EXCEPTION in logcat"; grep -A20 'FATAL EXCEPTION' "$OUT/logcat.txt" | head -40; fail=1; fi
