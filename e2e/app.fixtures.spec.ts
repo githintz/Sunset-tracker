@@ -92,6 +92,20 @@ test.describe('Zürich forecast from fixtures', () => {
   });
 });
 
+test('map renders precomputed grids with a time slider and layer switch', async ({ page, context }) => {
+  await routeFixtures(context, { maps: true });
+  await openSpot(page, 'zurich');
+  await page.getByTestId('nav-maps').click();
+  await expect(page.getByTestId('map-slider')).toBeVisible();
+  await expect(page.locator('.leaflet-overlay-pane canvas, .leaflet-overlay-pane path').first()).toBeAttached();
+  await page.getByRole('tab', { name: 'Cloud layers' }).click();
+  await page.getByRole('tab', { name: 'Mid' }).click();
+  await page.getByTestId('map-slider').fill('5');
+  await expect(page.getByText('Mid cloud (%)')).toBeVisible();
+  await page.getByRole('tab', { name: 'Dark sky' }).click();
+  await expect(page.getByTestId('map-slider')).toBeVisible();
+});
+
 test.describe('edge spots', () => {
   for (const spot of ['gornergrat', 'mid-atlantic', 'tromso']) {
     test(`${spot} loads a forecast`, async ({ page, context }) => {

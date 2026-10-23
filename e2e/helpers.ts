@@ -36,6 +36,8 @@ const PNG_1x1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUl
 export interface RouteOptions {
   /** Return a status code to fail matching requests. */
   fail?: (url: string) => number | null;
+  /** Serve test/fixtures/maps for the map grids. */
+  maps?: boolean;
 }
 
 /** Serve Open-Meteo from fixtures, blank map tiles, and count unmatched requests. */
@@ -55,6 +57,13 @@ export async function routeFixtures(ctx: BrowserContext, opts: RouteOptions = {}
     return route.fulfill({ status: 200, contentType: 'application/json', body: file.includes('geocoding') ? JSON.stringify((JSON.parse(body) as { json: unknown }).json) : body });
   });
   await ctx.route(/tile\.openstreetmap\.org/, (route) => route.fulfill({ status: 200, contentType: 'image/png', body: PNG_1x1 }));
+  if (opts.maps) {
+    await ctx.route(/\/maps\/[\w.-]+\.json/, (route) => {
+      const name = new URL(route.request().url()).pathname.split('/').pop()!;
+      const f = join(ROOT, 'maps', name);
+      return existsSync(f) ? route.fulfill({ status: 200, contentType: 'application/json', body: readFileSync(f, 'utf8') }) : route.fulfill({ status: 404 });
+    });
+  }
   return { unmatched };
 }
 

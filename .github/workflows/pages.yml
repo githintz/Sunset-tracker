@@ -61,6 +61,7 @@ jobs:
 
   maps:
     name: Map grids
+    if: inputs.compute_maps
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -70,12 +71,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Compute fresh grids
-        if: inputs.compute_maps
-        run: npm run maps -- --out maps-out
-      - name: Reuse the published grids
-        if: ${{ !inputs.compute_maps }}
-        run: node scripts/maps/fetch-published.mjs "$SITE_URL" maps-out
+      - run: npm run maps -- --out maps-out
       - uses: actions/upload-artifact@v7
         with:
           name: maps
@@ -85,7 +81,9 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: [test, maps]
-    if: github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch
+    if: >-
+      always() && needs.test.result == 'success' && (needs.maps.result == 'success' || needs.maps.result == 'skipped') &&
+      (github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch)
     runs-on: ubuntu-latest
     concurrency:
       group: github-pages-deploy
@@ -98,10 +96,19 @@ jobs:
         with:
           name: site
           path: site
-      - uses: actions/download-artifact@v8
+      - name: Fresh map grids
+        if: inputs.compute_maps
+        uses: actions/download-artifact@v8
         with:
           name: maps
           path: site/maps
+      # Code-only deploys keep whatever grids are live *now* (fetched inside the serialized deploy job,
+      # so a slow code deploy can't overwrite newer grids with older ones).
+      - name: Keep the published map grids
+        if: ${{ !inputs.compute_maps }}
+        run: |
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/scripts/maps/fetch-published.mjs" -o fetch-published.mjs
+          node fetch-published.mjs "$SITE_URL" site/maps
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
