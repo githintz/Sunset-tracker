@@ -1,0 +1,37 @@
+name: Live checks
+
+# Playwright against the real Open-Meteo API for 3 spots, plus the 7-day / 5-spot model comparison.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 6 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:pages
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e:live
+      - name: 7-day live comparison
+        run: npx tsx scripts/live-compare.ts --out live-compare-output
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: live-results
+          path: |
+            live-compare-output
+            playwright-report
+          retention-days: 30
+      - if: always()
+        run: test -f live-compare-output/live-compare.md && cat live-compare-output/live-compare.md >> "$GITHUB_STEP_SUMMARY" || true
