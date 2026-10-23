@@ -1,0 +1,106 @@
+name: Pages
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+    inputs:
+      compute_maps:
+        description: Recompute the map grids instead of reusing the published ones
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      compute_maps:
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SITE_URL: https://githintz.github.io/Sunset-tracker
+
+jobs:
+  test:
+    name: Typecheck, lint, unit tests, build, e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:coverage
+      - name: Coverage gate (src/engine ≥ 90 %)
+        run: node scripts/coverage-gate.mjs
+      - run: npm run build:pages
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: dist
+          retention-days: 3
+
+  maps:
+    name: Map grids
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Compute fresh grids
+        if: inputs.compute_maps
+        run: npm run maps -- --out maps-out
+      - name: Reuse the published grids
+        if: ${{ !inputs.compute_maps }}
+        run: node scripts/maps/fetch-published.mjs "$SITE_URL" maps-out
+      - uses: actions/upload-artifact@v7
+        with:
+          name: maps
+          path: maps-out
+          retention-days: 3
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: [test, maps]
+    if: github.event_name == 'schedule' || github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: site
+          path: site
+      - uses: actions/download-artifact@v8
+        with:
+          name: maps
+          path: site/maps
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v5

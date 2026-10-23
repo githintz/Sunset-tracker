@@ -1,0 +1,20 @@
+name: Maps
+
+# Precompute the underlight / cloud / dark-sky grids every 3 h and redeploy the site with them.
+# Note: GitHub disables scheduled workflows on public repos after 60 days without repository activity;
+# keepalive.yml makes a monthly API call to prevent that (or re-enable the workflow in the Actions tab).
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    uses: ./.github/workflows/pages.yml
+    with:
+      compute_maps: true
