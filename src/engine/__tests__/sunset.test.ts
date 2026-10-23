@@ -295,3 +295,15 @@ describe('§11 scoring properties (fast-check)', () => {
     );
   });
 });
+
+describe('underground pressure levels', () => {
+  it('a "deck" below the model surface does not make a low observer stand above the cloud', () => {
+    // fog reported at 1000 hPa (110 m) although the surface is at 965 hPa (~400 m)
+    const c = makeCorridor(() => ({ layers: [{ fromKm: 0, toKm: 0.2, cover: 100 }, MID50] }));
+    for (const p of c.points) p.surfacePressure = c.times.map(() => 965);
+    const withSp = scoreMoment(c, T0, ctx(0.41));
+    expect(withSp.undercast).toBe(false);
+    for (const p of c.points) p.surfacePressure = undefined;
+    expect(scoreMoment(c, T0, ctx(0.41)).undercast).toBe(true);
+  });
+});

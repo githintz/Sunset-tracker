@@ -32,6 +32,7 @@ export const CORRIDOR_SURFACE_VARS = [
   'precipitation_probability',
   'relative_humidity_2m',
   'visibility',
+  'surface_pressure',
 ] as const;
 
 export const OBSERVER_VARS = [
@@ -231,6 +232,7 @@ export function parseCorridor(json: unknown, req: CorridorRequest, fetchedAt: nu
       precipProb: numArray(hb.get('precipitation_probability'), n),
       rh: numArray(hb.get('relative_humidity_2m'), n),
       visibilityM: numArray(hb.get('visibility'), n),
+      surfacePressure: numArray(hb.get('surface_pressure'), n),
       levels,
     };
   });

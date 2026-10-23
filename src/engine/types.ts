@@ -28,6 +28,8 @@ export interface PointSeries {
   rh: Num[];
   visibilityM: Num[];
   levels: LevelSeries[];
+  /** Surface pressure (hPa); levels with higher pressure are below the model's ground. Optional. */
+  surfacePressure?: Num[];
 }
 
 export interface CorridorSeries {

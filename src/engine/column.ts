@@ -5,6 +5,9 @@
 import { BANDS, OPACITY } from './config';
 import type { Num, PointSeries } from './types';
 
+/** A level this close below the surface pressure still counts (model/terrain mismatch tolerance). */
+export const UNDERGROUND_MARGIN_HPA = 5;
+
 /** Index i such that times[i] <= t <= times[i+1], or -1 if outside. */
 export function bracket(times: number[], t: number): number {
   if (times.length === 0 || t < times[0]! || t > times[times.length - 1]!) return -1;
@@ -63,10 +66,15 @@ export interface Column {
 
 export function columnAt(p: PointSeries, times: number[], t: number, modelHasLevels: boolean): Column {
   const s = (v: Num[]) => sampleAt(times, v, t);
-  const levels: LevelSample[] = p.levels.map((l) => {
-    const h = s(l.heightM);
-    return { hPa: l.hPa, cover: s(l.cover), zKm: h == null ? null : h / 1000 };
-  });
+  // Levels at a higher pressure than the surface are below the model's ground: their values are
+  // extrapolated, so they are not part of the column (unknown surface pressure keeps every level).
+  const sp = p.surfacePressure ? s(p.surfacePressure) : null;
+  const levels: LevelSample[] = p.levels
+    .filter((l) => sp == null || l.hPa <= sp + UNDERGROUND_MARGIN_HPA)
+    .map((l) => {
+      const h = s(l.heightM);
+      return { hPa: l.hPa, cover: s(l.cover), zKm: h == null ? null : h / 1000 };
+    });
   const vis = s(p.visibilityM);
   return {
     distanceKm: p.distanceKm,
