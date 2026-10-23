@@ -139,9 +139,15 @@ export function coverAt(col: Column, zAbsKm: number): CoverAtHeight {
   return { cover: bandFallbackCover(col, zAbsKm), band, resolved: false };
 }
 
+/**
+ * Band cover at a height. For a model that publishes pressure levels but has a gap here, we can't tell where
+ * in the band the cloud sits, so near a band boundary the worse of the two bands is used. A model that has no
+ * level data at all is judged on the plain band containing the height.
+ */
 export function bandFallbackCover(col: Column, zAbsKm: number): Num {
   const agl = zAbsKm - col.groundKm;
   const bands: Band[] = [bandOfHeight(col, zAbsKm)];
+  if (!col.modelHasLevels) return bandCover(col, bands[0]!);
   if (Math.abs(agl - BANDS.lowTopKm) < BAND_AMBIGUITY_KM) bands.push(agl < BANDS.lowTopKm ? 'mid' : 'low');
   if (Math.abs(agl - BANDS.midTopKm) < BAND_AMBIGUITY_KM) bands.push(agl < BANDS.midTopKm ? 'high' : 'mid');
   let worst = 0;

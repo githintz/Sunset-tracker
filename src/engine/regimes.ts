@@ -79,7 +79,7 @@ export const DAY_REGIMES: Regime[] = [
     ceiling: 4,
     canSkip: false,
     decide: (c) =>
-      n(c.cape) > DAY.storm.cape && has(c.li) && c.li! < DAY.storm.liftedIndex && n(c.showers) > 0 && directSunSoon(c)
+      n(c.cape) > DAY.storm.cape && has(c.li) && c.li! < DAY.storm.liftedIndex && n(c.showers) > 0
         ? { verdict: 4, signals: [`Unstable air (CAPE ${Math.round(n(c.cape))} J/kg, lifted index ${n(c.li).toFixed(1)})`, 'Showers around with sun breaking through'] }
         : null,
     refuse: (c) =>

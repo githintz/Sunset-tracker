@@ -127,3 +127,45 @@ export function makeObserverSeries(over: Partial<Record<keyof Omit<ObserverSerie
 }
 
 export const ZURICH: Observer = { lat: 47.3769, lon: 8.5417, elevationM: 408, elevationOverride: false, timezone: 'Europe/Zurich', name: 'Zurich' };
+
+/** Hourly series covering [start, start + hours) with a spec per point and per hour. */
+export function makeLongCorridor(
+  start: number,
+  hours: number,
+  specFor: (d: number, t: number) => PointSpec,
+  opts: { model?: string; hasLevels?: boolean } = {},
+): CorridorSeries {
+  const times = Array.from({ length: hours }, (_, i) => start + i * HOUR);
+  const points = ALL_DISTANCES.map((d) => {
+    const per = times.map((t) => makePoint(d, specFor(d, t), 1));
+    const first = per[0]!;
+    const cat = (k: 'cloudCover' | 'low' | 'mid' | 'high' | 'precip' | 'precipProb' | 'rh' | 'visibilityM') => per.map((p) => p[k][0] ?? null);
+    return {
+      ...first,
+      cloudCover: cat('cloudCover'),
+      low: cat('low'),
+      mid: cat('mid'),
+      high: cat('high'),
+      precip: cat('precip'),
+      precipProb: cat('precipProb'),
+      rh: cat('rh'),
+      visibilityM: cat('visibilityM'),
+      levels: first.levels.map((l, li) => ({ hPa: l.hPa, cover: per.map((p) => p.levels[li]!.cover[0] ?? null), heightM: per.map((p) => p.levels[li]!.heightM[0] ?? null) })),
+    };
+  });
+  return { model: opts.model ?? 'best_match', times, points, hasLevels: opts.hasLevels ?? true, fetchedAt: start };
+}
+
+export function makeLongObserver(start: number, hours: number, f: (t: number) => Partial<Record<keyof Omit<ObserverSeries, 'times'>, number | null>>): ObserverSeries {
+  const times = Array.from({ length: hours }, (_, i) => start + i * HOUR);
+  const rows = times.map((t) => makeObserverSeries(f(t), [t]));
+  const keys = Object.keys(rows[0]!).filter((k) => k !== 'times') as Array<keyof Omit<ObserverSeries, 'times'>>;
+  const out = { times } as ObserverSeries;
+  for (const k of keys) out[k] = rows.map((r) => r[k][0] ?? null);
+  return out;
+}
+
+export function makeLongAir(start: number, hours: number, aod: number | null = 0.12): AirSeries {
+  const times = Array.from({ length: hours }, (_, i) => start + i * HOUR);
+  return { times, aod: times.map(() => aod), dust: times.map(() => 3) };
+}

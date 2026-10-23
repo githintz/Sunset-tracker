@@ -9,7 +9,7 @@ import { altitudeTimeNear } from './solar';
 import { rainMultiplier } from './sunset';
 import type { CorridorSeries, ObserverSeries } from './types';
 
-export type GoldenLabel = 'warm direct light' | 'patchy direct light' | 'diffused muted light' | 'no golden hour';
+export type GoldenLabel = 'warm direct light' | 'patchy direct light' | 'diffused muted light' | 'no golden hour' | 'no data';
 
 export interface GoldenRating {
   /** 0..5, or null when there is no golden hour (polar day/night). */
@@ -49,7 +49,7 @@ export function goldenHour(g: GoldenInputs): GoldenRating {
   const samples: number[] = [];
   let missing = false;
   for (const e of GOLDEN.sampleElevations) {
-    const t = e === 0 ? g.eventMs : altitudeTimeNear(g.lat, g.lon, g.eventMs, e, dir, 8);
+    const t = altitudeTimeNear(g.lat, g.lon, g.eventMs, e, dir, 8);
     if (t == null) continue;
     let transmission = 1;
     for (const d of NEAR) {
@@ -70,6 +70,7 @@ export function goldenHour(g: GoldenInputs): GoldenRating {
   if (samples.length === 0) {
     return { score: null, label: 'no golden hour', directShare: null, start, end, missing };
   }
+  if (!g.corridor && !g.observer) return { score: null, label: 'no data', directShare: null, start, end, missing: true };
   const directShare = samples.reduce((a, b) => a + b, 0) / samples.length;
   // probability term off (0 %); precipitation amount at the viewpoint drives the penalty, unknown → worst
   const mm = g.observer ? sampleAt(g.observer.times, g.observer.precip, g.eventMs) : null;

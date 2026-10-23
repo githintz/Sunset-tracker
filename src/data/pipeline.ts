@@ -119,7 +119,8 @@ export async function loadForecast(spot: Spot, now: number, deps: PipelineDeps):
   const logs: RequestLog[] = [];
   const errors: string[] = [];
   const bearings = eventBearings(spot.lat, spot.lon, now);
-  const pastDays = deps.pastDays;
+  // One past day costs nothing extra (≤ 14 days per call) and lets today's earlier events be rated too.
+  const pastDays = deps.pastDays ?? 1;
 
   // ---- elevation profile for both bearings (one request, ≤100 coordinates)
   const prof = (b: number | null) => (b == null ? [] : profilePoints(spot, b));

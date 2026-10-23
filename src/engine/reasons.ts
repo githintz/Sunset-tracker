@@ -19,7 +19,10 @@ function canvasStory(m: MomentScore): { code: string; text: string } {
   if (L != null && M != null && H != null && L < 10 && M < 10 && H < 10) return { code: 'clear', text: 'Almost no cloud overhead to catch the colour — expect a clean but pale glow' };
   if (M != null && H != null && Math.max(M, H) >= 90) return { code: 'upper-lid', text: 'A closed mid/high deck overhead — colour will mostly stay on its edges and gaps' };
   if (L != null && L > 0 && L <= 30 && (M ?? 0) < 15 && (H ?? 0) < 15) return { code: 'low-sparse', text: 'Only scattered low cloud overhead — a pale glow rather than fire' };
-  return { code: 'canvas-good', text: 'Broken mid and high cloud overhead — a good canvas for colour' };
+  if (m.canvas >= 0.7) return { code: 'canvas-good', text: 'Broken mid and high cloud overhead — a good canvas for colour' };
+  if (L != null && L >= 40) return { code: 'low-hides', text: `Low cloud overhead (${Math.round(L)} %) hides much of the higher canvas` };
+  if (M != null && H != null && Math.max(M, H) < 25) return { code: 'thin-canvas', text: 'Only thin, patchy cloud overhead — not much for the light to paint' };
+  return { code: 'canvas-mixed', text: 'A mixed sky overhead — some cloud to catch colour, but not ideal' };
 }
 
 function lightPathStory(m: MomentScore): string {

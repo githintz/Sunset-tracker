@@ -15,8 +15,11 @@ export const ENDPOINTS = {
 } as const;
 
 export const MODEL_A = 'best_match';
-/** ECMWF IFS HRES 9 km is on the free API; the 0.25° open-data run is the fallback if it is refused. */
-export const MODEL_B_CANDIDATES = ['ecmwf_ifs', 'ecmwf_ifs025'] as const;
+/**
+ * ECMWF IFS 0.25° delivers pressure-level cloud cover (RH-derived) and geopotential heights; the 9 km HRES
+ * run on the free API returns those as null (verified on recorded responses), so it is only the fallback.
+ */
+export const MODEL_B_CANDIDATES = ['ecmwf_ifs025', 'ecmwf_ifs'] as const;
 /** ECMWF publishes these levels only (no 950/900/800 hPa). */
 export const MODEL_B_LEVELS = [1000, 925, 850, 700, 600, 500, 400, 300, 250, 200] as const;
 
@@ -204,18 +207,16 @@ export function parseCorridor(json: unknown, req: CorridorRequest, fetchedAt: nu
   const locs = locations(json);
   if (locs.length !== req.points.length) throw new DataError(`Expected ${req.points.length} locations, got ${locs.length}`);
   let times: number[] | null = null;
-  let anyLevel = false;
   const points: PointSeries[] = locs.map((loc, i) => {
     const meta = req.points[i]!;
     const hb = hourlyBlock(loc);
     if (!times) times = hb.times;
     const n = times.length;
-    const levels: LevelSeries[] = req.levels.map((hPa) => {
-      const cover = numArray(hb.get(`cloud_cover_${hPa}hPa`), n);
-      const heightM = numArray(hb.get(`geopotential_height_${hPa}hPa`), n);
-      if (cover.some((v) => v != null) && heightM.some((v) => v != null)) anyLevel = true;
-      return { hPa, cover, heightM };
-    });
+    const levels: LevelSeries[] = req.levels.map((hPa) => ({
+      hPa,
+      cover: numArray(hb.get(`cloud_cover_${hPa}hPa`), n),
+      heightM: numArray(hb.get(`geopotential_height_${hPa}hPa`), n),
+    }));
     return {
       distanceKm: meta.distanceKm,
       role: meta.role,
@@ -233,8 +234,19 @@ export function parseCorridor(json: unknown, req: CorridorRequest, fetchedAt: nu
       levels,
     };
   });
-  return { model: req.model, times: times ?? [], points, hasLevels: anyLevel, fetchedAt };
+  // A model may not publish every requested level (e.g. no 950/900/800 hPa). Levels that are null at every
+  // point and time are not part of that model's data; dropping them keeps "missing" meaning missing.
+  const provided = req.levels.filter((_, li) =>
+    points.some((p) => p.levels[li]!.cover.some((v) => v != null) && p.levels[li]!.heightM.some((v) => v != null)),
+  );
+  for (const p of points) p.levels = p.levels.filter((l) => provided.includes(l.hPa as never));
+  const hasLevels = provided.length >= MIN_LEVELS;
+  if (!hasLevels) for (const p of points) p.levels = [];
+  return { model: req.model, times: times ?? [], points, hasLevels, fetchedAt };
 }
+
+/** Fewer published levels than this and we treat the model as band-only. */
+export const MIN_LEVELS = 5;
 
 export interface ObserverParsed {
   series: ObserverSeries;
